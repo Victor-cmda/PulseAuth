@@ -9,7 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Presentation.Configuration;
 using System.Text;
+using Domain.Entities;
 using Microsoft.OpenApi.Models;
+using IdentityServer4.Models;
+using Presentation.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +42,10 @@ builder.Services.AddSwaggerGen(c =>
                 {
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
-                }
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header
             },
             new string[] {}
         }
@@ -50,12 +56,19 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
 var jwtConfig = builder.Configuration.GetSection("Jwt").Get<JwtConfig>();
 var key = Encoding.ASCII.GetBytes(jwtConfig.Key);
+// Configurar IdentityServer4
+
+builder.Services.AddIdentityServer()
+    .AddDeveloperSigningCredential() // Apenas para desenvolvimento
+    .AddInMemoryApiScopes(Config.ApiScopes)
+    .AddInMemoryClients(Config.Clients) 
+    .AddAspNetIdentity<User>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -64,6 +77,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.Authority = "https://localhost:5001";
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -94,6 +108,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseIdentityServer();
 
 app.MapControllers();
 

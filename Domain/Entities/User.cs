@@ -1,9 +1,9 @@
-﻿namespace Domain.Entities
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace Domain.Entities
 {
-    public class User
+    public class User : IdentityUser
     {
-        public string Id { get; set; }
-        public string Email { get; set; }
-        public string PasswordHash { get; set; }
+        public Client Client { get; set; }
     }
 }

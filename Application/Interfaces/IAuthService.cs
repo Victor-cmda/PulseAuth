@@ -9,8 +9,8 @@ namespace Application.Interfaces
 {
     public interface IAuthService
     {
-        Task<string> Register(RegisterModel model);
-        Task<string> Login(LoginModel model);
-        Task Logout();
+        Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
+        Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
+        Task<AuthResponseDto> GenerateTokenAsync(ClientCredentialsDto clientCredentialsDto);
     }
 }

@@ -6,6 +6,6 @@ namespace Domain.Interfaces
     public interface IUserRepository
     {
         Task<IdentityUser> GetByEmailAsync(string email);
-        Task AddAsync(IdentityUser user);
+        Task AddAsync(User user);
     }
 }

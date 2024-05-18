@@ -17,32 +17,24 @@ namespace Presentation.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var result = await _authService.Register(model);
-            return Ok(new { Message = result });
+            var result = await _authService.RegisterAsync(registerDto);
+            return Ok(result);
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var token = await _authService.Login(model);
-            return Ok(new { Token = token });
+            var result = await _authService.LoginAsync(loginDto);
+            return Ok(result);
         }
 
-        [Authorize]
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
+        [HttpPost("token")]
+        public async Task<IActionResult> GenerateToken([FromBody] ClientCredentialsDto clientCredentialsDto)
         {
-            await _authService.Logout();
-            return Ok(new { Message = "Logged out successfully" });
-        }
-
-        [Authorize]
-        [HttpPost("teste")]
-        public async Task<IActionResult> teste()
-        {
-            return Ok(new { Message = "Protegido" });
+            var result = await _authService.GenerateTokenAsync(clientCredentialsDto);
+            return Ok(result);
         }
     }
 }
