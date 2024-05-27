@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.Services;
+using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Data.Repositories;
@@ -7,12 +8,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Presentation.Configuration;
 using System.Text;
-using Domain.Entities;
-using Microsoft.OpenApi.Models;
-using IdentityServer4.Models;
-using Presentation.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,7 +65,7 @@ var key = Encoding.ASCII.GetBytes(jwtConfig.Key);
 builder.Services.AddIdentityServer()
     .AddDeveloperSigningCredential() // Apenas para desenvolvimento
     .AddInMemoryApiScopes(Config.ApiScopes)
-    .AddInMemoryClients(Config.Clients) 
+    .AddInMemoryClients(Config.Clients)
     .AddAspNetIdentity<User>();
 
 builder.Services.AddAuthentication(options =>
@@ -90,8 +88,18 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("UserPolicy", policy =>
+        policy.RequireClaim("TokenType", "User"));
+
+    options.AddPolicy("ClientPolicy", policy =>
+        policy.RequireClaim("TokenType", "Client"));
+});
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
 
 var app = builder.Build();
 
