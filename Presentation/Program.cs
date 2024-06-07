@@ -75,7 +75,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.Authority = "https://localhost:5001";
+    // options.Authority = "https://localhost:5001";
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -97,6 +97,16 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("TokenType", "Client"));
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("OpenCorsPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
@@ -112,6 +122,8 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth API V1");
     });
 }
+
+app.UseCors("OpenCorsPolicy");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

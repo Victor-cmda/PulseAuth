@@ -8,6 +8,7 @@ namespace Infrastructure.Data
     public class AppDbContext : IdentityDbContext<User>
     {
         public DbSet<Client> Clients { get; set; }
+        public DbSet<Seller> Sellers { get; set;}
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -37,6 +38,11 @@ namespace Infrastructure.Data
             { 
                 entity.ToTable(name: "Clients", schema: "identity");
                 entity.HasIndex(c => c.ClientId).IsUnique();
+            });
+            builder.Entity<Seller>(entity => 
+            { 
+                entity.ToTable(name: "Sellers", schema: "identity");
+                entity.HasIndex(m => m.SellerId).IsUnique();
             });
         }
     }

@@ -5,5 +5,6 @@ namespace Domain.Entities
     public class User : IdentityUser
     {
         public Client Client { get; set; }
+        public ICollection<Seller> Sellers { get; set; }
     }
 }

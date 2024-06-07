@@ -6,7 +6,7 @@ using System.Text;
 namespace Presentation.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("auth")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -30,7 +30,7 @@ namespace Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpPost("token")]
+        [HttpPost("oauth/2/token")]
         public async Task<IActionResult> GenerateToken()
         {
             if (!Request.Headers.ContainsKey("Authorization"))
