@@ -36,7 +36,7 @@ namespace Application.Services
         {
             try
             {
-                return await _sellerRepository.GetSellersAsync(id);
+                return await _sellerRepository.GetSellersByUserIdAsync(id);
             }
             catch (Exception ex)
             {

@@ -14,7 +14,13 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configuração do Kestrel para ler as configurações do appsettings.json
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Configure(builder.Configuration.GetSection("Kestrel"));
+});
+
+// Adiciona serviços ao contêiner.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -61,7 +67,6 @@ builder.Services.AddIdentity<User, IdentityRole>()
 var jwtConfig = builder.Configuration.GetSection("Jwt").Get<JwtConfig>();
 var key = Encoding.ASCII.GetBytes(jwtConfig.Key);
 // Configurar IdentityServer4
-
 builder.Services.AddIdentityServer()
     .AddDeveloperSigningCredential() // Apenas para desenvolvimento
     .AddInMemoryApiScopes(Config.ApiScopes)
@@ -75,7 +80,6 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    // options.Authority = "https://localhost:5001";
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -113,7 +117,7 @@ builder.Services.AddScoped<IClientRepository, ClientRepository>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configurar o pipeline de requisições HTTP.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
