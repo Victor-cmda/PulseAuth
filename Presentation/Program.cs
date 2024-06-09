@@ -66,6 +66,7 @@ builder.Services.AddIdentity<User, IdentityRole>()
 
 var jwtConfig = builder.Configuration.GetSection("Jwt").Get<JwtConfig>();
 var key = Encoding.ASCII.GetBytes(jwtConfig.Key);
+
 // Configurar IdentityServer4
 builder.Services.AddIdentityServer()
     .AddDeveloperSigningCredential() // Apenas para desenvolvimento
@@ -101,6 +102,7 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("TokenType", "Client"));
 });
 
+// Configuração de CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OpenCorsPolicy", policy =>
@@ -118,18 +120,17 @@ builder.Services.AddScoped<IClientRepository, ClientRepository>();
 var app = builder.Build();
 
 // Configurar o pipeline de requisições HTTP.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth API V1");
-    });
-}
 
-app.UseCors("OpenCorsPolicy");
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth API V1");
+    c.RoutePrefix = string.Empty; // Isso define o Swagger na raiz
+});
+
 
 app.UseHttpsRedirection();
+app.UseCors("OpenCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseIdentityServer();
