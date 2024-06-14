@@ -19,7 +19,7 @@ namespace Infrastructure.Data.Repositories
             return await _context.Users.SingleOrDefaultAsync(u => u.Email == email);
         }
 
-        public async Task AddAsync(IdentityUser user)
+        public async Task AddAsync(User user)
         {
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
