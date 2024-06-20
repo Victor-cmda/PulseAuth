@@ -5,9 +5,9 @@ namespace Application.Interfaces
 {
     public interface ISellerService
     {
-        Task<IEnumerable<Seller>> GetSellersByUserIdAsync(Guid id);
-        Task<Seller> PostSellerAsync(SellerDto sellerDto);
-        Task<Seller> PutSellerAsync(Guid Id, SellerDto sellerDto);
+        Task<IEnumerable<SellerDto>> GetSellersByUserIdAsync(Guid id);
+        Task<SellerDto> PostSellerAsync(SellerDto sellerDto, Guid userId);
+        Task<SellerDto> PutSellerAsync(Guid Id, SellerDto sellerDto);
         Task<bool> DeleteSellerAsync(Guid Id);
     }
 }

@@ -44,7 +44,7 @@ namespace Presentation.Controllers
             }
         }
 
-        [HttpPost("oauth/2/token")]
+        [HttpPost("oauth/v2/token")]
         public async Task<IActionResult> GenerateToken()
         {
             if (!Request.Headers.ContainsKey("Authorization"))
@@ -91,7 +91,7 @@ namespace Presentation.Controllers
 
             return new ClientCredentialsDto
             {
-                ClientId = credentialsParts[0],
+                ClientId = Guid.Parse(credentialsParts[0]),
                 ClientSecret = credentialsParts[1]
             };
         }

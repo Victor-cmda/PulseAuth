@@ -13,6 +13,6 @@ namespace Application.Interfaces
         Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
         Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
         Task<AuthResponseDto> GenerateTokenAsync(ClientCredentialsDto clientCredentialsDto);
-        Task<User> ValidateClientCredentialsAsync(string clientId, string clientSecret);
+        Task<User> ValidateClientCredentialsAsync(Guid clientId, string clientSecret);
     }
 }

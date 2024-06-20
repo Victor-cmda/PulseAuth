@@ -32,11 +32,24 @@ namespace Application.Services
             }
         }
 
-        public async Task<IEnumerable<Seller>> GetSellersByUserIdAsync(Guid id)
+        public async Task<IEnumerable<SellerDto>> GetSellersByUserIdAsync(Guid Id)
         {
             try
             {
-                return await _sellerRepository.GetSellersByUserIdAsync(id);
+                var sellers = await _sellerRepository.GetSellersByUserIdAsync(Id);
+
+                var sellerDtos = new List<SellerDto>();
+                foreach (var seller in sellers)
+                {
+                    sellerDtos.Add(new SellerDto
+                    {
+                        Id = seller.Id,
+                        Name = seller.Name,
+                        Description = seller.Description
+                    });
+                }
+
+                return sellerDtos;
             }
             catch (Exception ex)
             {
@@ -44,19 +57,26 @@ namespace Application.Services
             }
         }
 
-        public async Task<Seller> PostSellerAsync(SellerDto sellerDto)
+        public async Task<SellerDto> PostSellerAsync(SellerDto sellerDto, Guid userId)
         {
             try
             {
                 var seller = new Seller
                 {
-                    SellerId = Guid.NewGuid(),
+                    Id = Guid.NewGuid(),
                     Name = sellerDto.Name,
                     Description = sellerDto.Description,
+                    UserId = userId.ToString()
                 };
 
                 var result = await _sellerRepository.PostSellerAsync(seller);
-                return result;
+
+                return new SellerDto
+                {
+                    Id = result.Id,
+                    Name = result.Name,
+                    Description = result.Description,
+                };
             }
             catch (Exception ex)
             {
@@ -64,7 +84,7 @@ namespace Application.Services
             }
         }
 
-        public async Task<Seller> PutSellerAsync(Guid id, SellerDto sellerDto)
+        public async Task<SellerDto> PutSellerAsync(Guid id, SellerDto sellerDto)
         {
             try
             {
@@ -75,7 +95,13 @@ namespace Application.Services
                 };
 
                 var result = await _sellerRepository.PutSellerAsync(id, seller);
-                return result;
+
+                return new SellerDto
+                {
+                    Id = result.Id,
+                    Name = result.Name,
+                    Description = result.Description,
+                };
             }
             catch (Exception ex)
             {

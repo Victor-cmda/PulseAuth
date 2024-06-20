@@ -8,7 +8,7 @@ namespace Infrastructure.Data
     public class AppDbContext : IdentityDbContext<User>
     {
         public DbSet<Client> Clients { get; set; }
-        public DbSet<Seller> Sellers { get; set;}
+        public DbSet<Seller> Sellers { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -19,8 +19,8 @@ namespace Infrastructure.Data
             base.OnModelCreating(builder);
             builder.HasDefaultSchema("identity");
 
-            builder.Entity<User>(entity => 
-            { 
+            builder.Entity<User>(entity =>
+            {
                 entity.ToTable(name: "Users", schema: "identity");
                 entity.HasOne(u => u.Client)
                     .WithOne(c => c.User)
@@ -33,16 +33,21 @@ namespace Infrastructure.Data
             builder.Entity<IdentityUserLogin<string>>(entity => { entity.ToTable("UserLogins", "identity"); });
             builder.Entity<IdentityRoleClaim<string>>(entity => { entity.ToTable("RoleClaims", "identity"); });
             builder.Entity<IdentityUserToken<string>>(entity => { entity.ToTable("UserTokens", "identity"); });
-            
-            builder.Entity<Client>(entity => 
-            { 
+
+            builder.Entity<Client>(entity =>
+            {
                 entity.ToTable(name: "Clients", schema: "identity");
                 entity.HasIndex(c => c.ClientId).IsUnique();
             });
-            builder.Entity<Seller>(entity => 
-            { 
+            builder.Entity<Seller>(entity =>
+            {
                 entity.ToTable(name: "Sellers", schema: "identity");
-                entity.HasIndex(m => m.SellerId).IsUnique();
+                entity.HasIndex(m => m.Id).IsUnique();
+
+                entity.HasOne(s => s.User)
+                    .WithMany(u => u.Sellers)
+                    .HasForeignKey(s => s.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

@@ -17,9 +17,9 @@ namespace Infrastructure.Data.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Seller>> GetSellersByUserIdAsync(Guid id)
+        public async Task<IEnumerable<Seller>> GetSellersByUserIdAsync(Guid userId)
         {
-            return await _context.Sellers.Where(x => x.UserId == id).ToListAsync();
+            return await _context.Sellers.Where(x => x.UserId == userId.ToString()).ToListAsync();
         }
 
         public async Task<Seller> PostSellerAsync(Seller seller)
@@ -31,12 +31,12 @@ namespace Infrastructure.Data.Repositories
 
         public async Task<Seller> PutSellerAsync(Guid id, Seller seller)
         {
-            if (id != seller.SellerId)
+            if (id != seller.Id)
             {
                 throw new ArgumentException("SellerId Not Found");
             }
 
-            var existingSeller = await _context.Sellers.FirstOrDefaultAsync(m => m.SellerId == id);
+            var existingSeller = await _context.Sellers.FirstOrDefaultAsync(m => m.Id == id);
 
             if (existingSeller != null)
             {
@@ -53,7 +53,7 @@ namespace Infrastructure.Data.Repositories
 
         public async Task<bool> DeleteSellerAsync(Guid id)
         {
-            var seller = await _context.Sellers.FirstOrDefaultAsync(m => m.SellerId == id);
+            var seller = await _context.Sellers.FirstOrDefaultAsync(m => m.Id == id);
             if (seller != null)
             {
                 _context.Sellers.Remove(seller);

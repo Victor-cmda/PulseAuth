@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240530002607_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20240620014946_first")]
+    partial class first
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,8 +28,9 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Client", b =>
                 {
-                    b.Property<string>("ClientId")
-                        .HasColumnType("text");
+                    b.Property<Guid>("ClientId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ClientSecret")
                         .IsRequired()
@@ -48,6 +49,34 @@ namespace Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Clients", "identity");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Seller", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Sellers", "identity");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -257,6 +286,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Seller", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany("Sellers")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -312,6 +352,8 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("Client")
                         .IsRequired();
+
+                    b.Navigation("Sellers");
                 });
 #pragma warning restore 612, 618
         }

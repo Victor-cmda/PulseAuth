@@ -44,7 +44,7 @@ namespace Application.Services
                 throw new Exception("Failed to register user");
             }
 
-            var clientId = Guid.NewGuid().ToString();
+            var clientId = Guid.NewGuid();
             var clientSecret = Guid.NewGuid().ToString();
 
             var client = new Client
@@ -93,7 +93,7 @@ namespace Application.Services
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, client.ClientId),
+                    new Claim(ClaimTypes.NameIdentifier, client.ClientId.ToString()),
                     new Claim(ClaimTypes.Hash, client.ClientSecret),
                     new Claim("TokenType", "Client")
                 }),
@@ -113,7 +113,7 @@ namespace Application.Services
             };
         }
 
-        public async Task<User> ValidateClientCredentialsAsync(string clientId, string clientSecret)
+        public async Task<User> ValidateClientCredentialsAsync(Guid clientId, string clientSecret)
         {
             var client = await _clientRepository.FindByClientIdAsync(clientId);
             if (client == null || client.ClientSecret != clientSecret)
@@ -134,7 +134,7 @@ namespace Application.Services
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim("sub", user.Id),
                     new Claim(ClaimTypes.Name, user.UserName),
                     new Claim("TokenType", "User")
                 }),

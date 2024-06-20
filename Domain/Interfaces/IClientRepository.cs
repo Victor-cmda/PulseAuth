@@ -4,6 +4,6 @@ namespace Domain.Interfaces
 {
     public interface IClientRepository
     {
-        Task<Client> FindByClientIdAsync(string clientId);
+        Task<Client> FindByClientIdAsync(Guid clientId);
     }
 }

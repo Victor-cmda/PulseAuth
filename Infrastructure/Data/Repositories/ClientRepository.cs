@@ -12,7 +12,7 @@ namespace Infrastructure.Data.Repositories
         {
             _context = context;
         }
-        public async Task<Client> FindByClientIdAsync(string clientId)
+        public async Task<Client> FindByClientIdAsync(Guid clientId)
         {
             return await _context.Clients.FirstOrDefaultAsync(c => c.ClientId == clientId);
         }
