@@ -1,7 +1,9 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Presentation.Controllers
 {
@@ -16,7 +18,9 @@ namespace Presentation.Controllers
             _authService = authService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
+        [SwaggerOperation(OperationId = "RegisterUser")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
             try
@@ -26,12 +30,14 @@ namespace Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return Unauthorized(ex.Message);
+                return NotFound(ex.Message);
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        [SwaggerOperation("LoginUser")]
+        public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto loginDto)
         {
             try
             {
@@ -40,12 +46,14 @@ namespace Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return Unauthorized(ex.Message);
+                return NotFound(ex.Message);
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("oauth/v2/token")]
-        public async Task<IActionResult> GenerateToken()
+        [SwaggerOperation("GetOauthToken")]
+        public async Task<ActionResult<AuthResponseDto>> GenerateToken()
         {
             if (!Request.Headers.ContainsKey("Authorization"))
             {
@@ -68,7 +76,7 @@ namespace Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return Unauthorized(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 

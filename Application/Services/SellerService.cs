@@ -3,9 +3,6 @@ using Application.Interfaces;
 using Domain.Entities;
 using Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -32,16 +29,16 @@ namespace Application.Services
             }
         }
 
-        public async Task<IEnumerable<SellerDto>> GetSellersByUserIdAsync(Guid Id)
+        public async Task<IEnumerable<SellerResponseDto>> GetSellersByUserIdAsync(Guid Id)
         {
             try
             {
                 var sellers = await _sellerRepository.GetSellersByUserIdAsync(Id);
 
-                var sellerDtos = new List<SellerDto>();
+                var sellerDtos = new List<SellerResponseDto>();
                 foreach (var seller in sellers)
                 {
-                    sellerDtos.Add(new SellerDto
+                    sellerDtos.Add(new SellerResponseDto
                     {
                         Id = seller.Id,
                         Name = seller.Name,
@@ -57,7 +54,7 @@ namespace Application.Services
             }
         }
 
-        public async Task<SellerDto> PostSellerAsync(SellerDto sellerDto, Guid userId)
+        public async Task<SellerResponseDto> PostSellerAsync(SellerDto sellerDto, Guid userId)
         {
             try
             {
@@ -71,7 +68,7 @@ namespace Application.Services
 
                 var result = await _sellerRepository.PostSellerAsync(seller);
 
-                return new SellerDto
+                return new SellerResponseDto
                 {
                     Id = result.Id,
                     Name = result.Name,
@@ -84,7 +81,7 @@ namespace Application.Services
             }
         }
 
-        public async Task<SellerDto> PutSellerAsync(Guid id, SellerDto sellerDto)
+        public async Task<SellerResponseDto> PutSellerAsync(Guid id, SellerDto sellerDto)
         {
             try
             {
@@ -96,7 +93,7 @@ namespace Application.Services
 
                 var result = await _sellerRepository.PutSellerAsync(id, seller);
 
-                return new SellerDto
+                return new SellerResponseDto
                 {
                     Id = result.Id,
                     Name = result.Name,

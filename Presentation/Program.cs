@@ -10,53 +10,45 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Presentation.Configuration;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração do Kestrel para ler as configurações do appsettings.json
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.Configure(builder.Configuration.GetSection("Kestrel"));
 });
 
-// Adiciona serviços ao contêiner.
 builder.Services.AddControllers();
+builder.Services.AddOpenApiDocument();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Auth API", Version = "v1" });
 
-    // Configurando o Bearer Token
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Name = "Authorization",
+        //Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
     });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    c.CustomOperationIds(apiDesc =>
     {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                },
-                Scheme = "oauth2",
-                Name = "Bearer",
-                In = ParameterLocation.Header
-            },
-            new string[] {}
-        }
+        return apiDesc.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null;
     });
+
+    c.OperationFilter<AuthorizeCheckOperationFilter>();
+
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 });
 
-// Configurar DbContext e Identity
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -67,9 +59,8 @@ builder.Services.AddIdentity<User, IdentityRole>()
 var jwtConfig = builder.Configuration.GetSection("Jwt").Get<JwtConfig>();
 var key = Encoding.ASCII.GetBytes(jwtConfig.Key);
 
-// Configurar IdentityServer4
 builder.Services.AddIdentityServer()
-    .AddDeveloperSigningCredential() // Apenas para desenvolvimento
+    .AddDeveloperSigningCredential()
     .AddInMemoryApiScopes(Config.ApiScopes)
     .AddInMemoryClients(Config.Clients)
     .AddAspNetIdentity<User>();
@@ -102,7 +93,6 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("TokenType", "Client"));
 });
 
-// Configuração de CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OpenCorsPolicy", policy =>
@@ -115,6 +105,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISellerService, SellerService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
@@ -122,9 +113,8 @@ builder.Services.AddScoped<ISellerRepository, SellerRepository>();
 
 var app = builder.Build();
 
-// Configurar o pipeline de requisições HTTP.
-
 app.UseSwagger();
+app.UseOpenApi();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth API V1");

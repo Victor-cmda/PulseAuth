@@ -30,7 +30,7 @@ namespace Application.Services
             _context = context;
         }
 
-        public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
+        public async Task<User> RegisterAsync(RegisterDto registerDto)
         {
             var user = new User
             {
@@ -55,10 +55,10 @@ namespace Application.Services
                 User = user
             };
 
-            _context.Clients.Add(client);
+            await _context.Clients.AddAsync(client);
             await _context.SaveChangesAsync();
 
-            return await GenerateTokenForUser(user);
+            return user;
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
