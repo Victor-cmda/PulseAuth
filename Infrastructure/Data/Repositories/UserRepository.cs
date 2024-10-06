@@ -46,5 +46,10 @@ namespace Infrastructure.Data.Repositories
                 .Include(u => u.Sellers)
                 .SingleOrDefaultAsync();
         }
+
+        public async Task<Callback> GetCallbackBySellerIdAsync(Guid Id)
+        {
+            return await _context.Callbacks.FirstOrDefaultAsync(x=>x.User.Sellers.Any(x=>x.Id == Id));
+        }
     }
 }

@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
+using Domain.Entities;
 using Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 
@@ -49,6 +50,31 @@ namespace Application.Services
             catch (Exception ex)
             {
                 throw new ApplicationException($"An error occurred while retrieving the user configuration: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<CallbackDto> GetCallbackBySellerIdAsync(Guid id)
+        {
+            try
+            {
+                var result = await _userRepository.GetCallbackBySellerIdAsync(id);
+                if (result == null)
+                {
+                    return null;
+                }
+
+                var callback = new CallbackDto
+                {
+                    Credit = result.Credit,
+                    Debit = result.Debit,
+                    Registration = result.Registration
+                };
+
+                return callback;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"An error occurred while retrieving the callbacks: {ex.Message}", ex);
             }
         }
     }
