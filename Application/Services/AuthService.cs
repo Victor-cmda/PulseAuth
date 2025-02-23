@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Application.Services
 {
@@ -32,10 +33,20 @@ namespace Application.Services
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
+            var baseUsername = GenerateBaseUsername(registerDto.Email);
+            var username = await GenerateUniqueUsername(baseUsername);
+
             var user = new User
             {
-                UserName = registerDto.Username,
-                Email = registerDto.Email
+                UserName = username,
+                Email = registerDto.Email,
+                Name = registerDto.Username,
+                PhoneNumber = registerDto.PhoneNumber,
+                Document = registerDto.Document,
+                DocumentType = registerDto.DocumentType,
+                EmailConfirmed = false,
+                PhoneNumberConfirmed = false,
+                TwoFactorEnabled = false
             };
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
@@ -152,6 +163,34 @@ namespace Application.Services
                 AccessToken = tokenString,
                 ExpiresIn = token.ValidTo
             };
+        }
+
+        private string GenerateBaseUsername(string email)
+        {
+            var baseUsername = email.Split('@')[0];
+
+            baseUsername = Regex.Replace(baseUsername, @"[^a-zA-Z0-9]", "");
+
+            if (baseUsername.Length > 20)
+            {
+                baseUsername = baseUsername.Substring(0, 20);
+            }
+
+            return baseUsername.ToLower();
+        }
+
+        private async Task<string> GenerateUniqueUsername(string baseUsername)
+        {
+            var username = baseUsername;
+            var counter = 1;
+
+            while (await _userManager.FindByNameAsync(username) != null)
+            {
+                username = $"{baseUsername}{counter}";
+                counter++;
+            }
+
+            return username;
         }
     }
 }
