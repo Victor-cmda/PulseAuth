@@ -69,7 +69,7 @@ namespace Application.Services
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
 
-            return await GenerateTokenForUser(user);
+            return GenerateTokenForUser(user);
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
@@ -86,7 +86,7 @@ namespace Application.Services
                 throw new Exception("Invalid credentials");
             }
 
-            return await GenerateTokenForUser(user);
+            return GenerateTokenForUser(user);
         }
 
         public async Task<AuthResponseDto> GenerateTokenAsync(ClientCredentialsDto clientCredentialsDto)
@@ -136,17 +136,17 @@ namespace Application.Services
             return user;
         }
 
-        private async Task<AuthResponseDto> GenerateTokenForUser(User user)
+        private AuthResponseDto GenerateTokenForUser(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? "");
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim("sub", user.Id),
-                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Name, user.UserName ?? ""),
                     new Claim("TokenType", "User")
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
@@ -161,7 +161,13 @@ namespace Application.Services
             return new AuthResponseDto
             {
                 AccessToken = tokenString,
-                ExpiresIn = token.ValidTo
+                ExpiresIn = token.ValidTo,
+                User = new UserDto
+                {
+                    Name = user.Name,
+                    Email = user.Email ?? "",
+                    PhoneNumber = user.PhoneNumber ?? "",
+                }
             };
         }
 
