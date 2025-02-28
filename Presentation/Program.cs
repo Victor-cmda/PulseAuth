@@ -14,20 +14,17 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração do Kestrel para ler as configurações do appsettings.json
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.Configure(builder.Configuration.GetSection("Kestrel"));
 });
 
-// Adiciona serviços ao contêiner.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Auth API", Version = "v1" });
 
-    // Configurando o Bearer Token
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -56,7 +53,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configurar DbContext e Identity
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -67,9 +63,8 @@ builder.Services.AddIdentity<User, IdentityRole>()
 var jwtConfig = builder.Configuration.GetSection("Jwt").Get<JwtConfig>();
 var key = Encoding.ASCII.GetBytes(jwtConfig.Key);
 
-// Configurar IdentityServer4
 builder.Services.AddIdentityServer()
-    .AddDeveloperSigningCredential() // Apenas para desenvolvimento
+    .AddDeveloperSigningCredential()
     .AddInMemoryApiScopes(Config.ApiScopes)
     .AddInMemoryClients(Config.Clients)
     .AddAspNetIdentity<User>();
@@ -102,7 +97,6 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("TokenType", "Client"));
 });
 
-// Configuração de CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OpenCorsPolicy", policy =>
@@ -115,14 +109,17 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISellerService, SellerService>();
+builder.Services.AddScoped<ISellerService, SellerService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICommerceService, CommerceService>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<ISellerRepository, SellerRepository>();
+builder.Services.AddScoped<ICommerceRepository, CommerceRepository>();
+builder.Services.AddScoped<ICommerceCallbackRepository, CommerceCallbackRepository>();
 
 var app = builder.Build();
-
-// Configurar o pipeline de requisições HTTP.
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>

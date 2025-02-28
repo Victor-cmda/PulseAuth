@@ -1,33 +1,69 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
-using Domain.Entities;
+using AutoMapper.Internal;
 using Domain.Interfaces;
-using Infrastructure.Data;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly IClientRepository _clientRepository;
-        private readonly IConfiguration _configuration;
-        private readonly AppDbContext _context;
-
-        public UserService(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration, AppDbContext context, IClientRepository clientRepository)
+        public IUserRepository _userRepository;
+        private readonly ILogger<UserService> _logger;
+        public UserService(IUserRepository userRepository, ILogger<UserService> logger)
         {
-            _userManager = userManager;
-            _clientRepository = clientRepository;
-            _signInManager = signInManager;
-            _configuration = configuration;
-            _context = context;
+            _userRepository = userRepository;
+            _logger = logger;
         }
 
-        public Task<ClientCredentialsDto> GetConfigurationUser(Guid userId)
+        public async Task<ConfigurationResponseDto> GetConfigurationUser(Guid userId)
         {
-            throw new NotImplementedException();
+            var user = await _userRepository.GetUserWithClientByIdAsync(userId.ToString());
+
+            if (user == null || user.Client == null)
+            {
+                throw new Exception("Usuário ou configurações de cliente não encontradas");
+            }
+
+            var configResponse = new ConfigurationResponseDto
+            {
+                ApiConfig = new ApiConfigDto
+                {
+                    ClientId = user.Client.ClientId,
+                    ClientSecret = user.Client.ClientSecret,
+                    ApiEndpoint = user.Client.ApiEndpoint ?? "https://api.pulsepay.com.br/v1"
+                }
+            };
+
+            return configResponse;
+        }
+
+        public async Task<ConfigurationResponseDto> UpdateConfigurationUser(Guid userId, UpdateConfigurationDto updateDto)
+        {
+            var client = await _userRepository.GetClientByUserIdAsync(userId.ToString());
+
+            if (client == null)
+            {
+                throw new Exception("Configurações de cliente não encontradas");
+            }
+
+            if (!string.IsNullOrEmpty(updateDto.ApiConfig?.ApiEndpoint))
+            {
+                client.ApiEndpoint = updateDto.ApiConfig.ApiEndpoint;
+            }
+
+            await _userRepository.UpdateClientAsync(client);
+            await _userRepository.SaveChangesAsync();
+
+            return new ConfigurationResponseDto
+            {
+                ApiConfig = new ApiConfigDto
+                {
+                    ClientId = client.ClientId,
+                    ClientSecret = client.ClientSecret,
+                    ApiEndpoint = client.ApiEndpoint
+                }
+            };
         }
     }
 }

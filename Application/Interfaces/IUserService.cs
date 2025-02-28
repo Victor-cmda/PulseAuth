@@ -4,7 +4,8 @@ namespace Application.Interfaces
 {
     public interface IUserService
     {
-        Task<ClientCredentialsDto> GetConfigurationUser(Guid userId);
+        Task<ConfigurationResponseDto> GetConfigurationUser(Guid userId);
+        Task<ConfigurationResponseDto> UpdateConfigurationUser(Guid userId, UpdateConfigurationDto updateDto);
     }
 }
 

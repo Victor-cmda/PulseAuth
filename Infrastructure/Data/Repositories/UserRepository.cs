@@ -24,5 +24,28 @@ namespace Infrastructure.Data.Repositories
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<User> GetUserWithClientByIdAsync(string userId)
+        {
+            return await _context.Users
+                .Include(u => u.Client)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
+        public async Task<Client> GetClientByUserIdAsync(string userId)
+        {
+            return await _context.Clients
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+        }
+
+        public async Task UpdateClientAsync(Client client)
+        {
+            _context.Clients.Update(client);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

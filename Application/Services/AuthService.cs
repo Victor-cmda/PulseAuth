@@ -35,6 +35,8 @@ namespace Application.Services
         {
             var baseUsername = GenerateBaseUsername(registerDto.Email);
             var username = await GenerateUniqueUsername(baseUsername);
+            var clientId = Guid.NewGuid().ToString();
+            var clientSecret = Guid.NewGuid().ToString();
 
             var user = new User
             {
@@ -46,7 +48,13 @@ namespace Application.Services
                 DocumentType = registerDto.DocumentType,
                 EmailConfirmed = false,
                 PhoneNumberConfirmed = false,
-                TwoFactorEnabled = false
+                TwoFactorEnabled = false,
+                Client = new Client
+                {
+                    ClientId = clientId,
+                    ClientSecret = clientSecret,
+                    ApiEndpoint = _configuration.GetSection("Client")["ApiEndpoint"] ?? "",
+                }
             };
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
@@ -54,20 +62,6 @@ namespace Application.Services
             {
                 throw new Exception("Failed to register user");
             }
-
-            var clientId = Guid.NewGuid();
-            var clientSecret = Guid.NewGuid().ToString();
-
-            var client = new Client
-            {
-                ClientId = clientId,
-                ClientSecret = clientSecret,
-                UserId = user.Id,
-                User = user
-            };
-
-            _context.Clients.Add(client);
-            await _context.SaveChangesAsync();
 
             return GenerateTokenForUser(user);
         }
@@ -132,7 +126,7 @@ namespace Application.Services
                 return null;
             }
 
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Client.ClientId == clientId);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Client.Id == clientId);
             return user;
         }
 

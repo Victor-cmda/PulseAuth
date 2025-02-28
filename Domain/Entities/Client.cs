@@ -6,10 +6,13 @@ namespace Domain.Entities;
 public class Client
 {
     [Key]
-    public Guid ClientId { get; set; }
+    public Guid Id { get; set; }
 
-    [Required]
+    public string ClientId { get; set; }
+    
     public string ClientSecret { get; set; }
+
+    public string ApiEndpoint { get; set; }
 
     [ForeignKey("User")]
     public string UserId { get; set; }

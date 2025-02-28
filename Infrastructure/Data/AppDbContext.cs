@@ -9,6 +9,8 @@ namespace Infrastructure.Data
     {
         public DbSet<Client> Clients { get; set; }
         public DbSet<Seller> Sellers { get; set; }
+        public DbSet<Commerce> Commerces { get; set; }
+        public DbSet<CommerceCallback> CommerceCallbacks { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -37,7 +39,13 @@ namespace Infrastructure.Data
             builder.Entity<Client>(entity =>
             {
                 entity.ToTable(name: "Clients", schema: "identity");
+                entity.HasKey(c => c.Id);
                 entity.HasIndex(c => c.ClientId).IsUnique();
+
+                entity.HasOne(c => c.User)
+                      .WithOne(u => u.Client)
+                      .HasForeignKey<Client>(c => c.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
             builder.Entity<Seller>(entity =>
             {
@@ -48,6 +56,28 @@ namespace Infrastructure.Data
                     .WithMany(u => u.Sellers)
                     .HasForeignKey(s => s.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<Commerce>(entity =>
+            {
+                entity.ToTable(name: "Commerces", schema: "identity");
+                entity.HasIndex(c => c.Id).IsUnique();
+
+                entity.HasOne(c => c.Seller)
+                    .WithMany()
+                    .HasForeignKey(c => c.SellerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(c => c.Callback)
+                    .WithOne(cb => cb.Commerce)
+                    .HasForeignKey<CommerceCallback>(cb => cb.CommerceId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<CommerceCallback>(entity =>
+            {
+                entity.ToTable(name: "CommerceCallbacks", schema: "identity");
+                entity.HasIndex(c => c.Id).IsUnique();
             });
         }
     }
