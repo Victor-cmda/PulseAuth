@@ -8,5 +8,7 @@
         public string Document { get; set; }
         public string DocumentType { get; set; }
         public string PhoneNumber { get; set; }
+        public string? Nationality { get; set; }
+        public bool IsForeigner { get; set; } = false;
     }
 }

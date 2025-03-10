@@ -46,6 +46,8 @@ namespace Application.Services
                 PhoneNumber = registerDto.PhoneNumber,
                 Document = registerDto.Document,
                 DocumentType = registerDto.DocumentType,
+                IsForeigner = registerDto.IsForeigner,
+                Nationality = registerDto.IsForeigner == true ? registerDto.Nationality : null,
                 EmailConfirmed = false,
                 PhoneNumberConfirmed = false,
                 TwoFactorEnabled = false,
@@ -56,6 +58,16 @@ namespace Application.Services
                     ApiEndpoint = _configuration.GetSection("Client")["ApiEndpoint"] ?? "",
                 }
             };
+
+            if (user.IsForeigner && string.IsNullOrEmpty(user.Nationality))
+            {
+                throw new ArgumentException("Nationality is required for foreign users");
+            }
+
+            if (!user.IsForeigner && (user.DocumentType != "CPF" && user.DocumentType != "CNPJ"))
+            {
+                throw new ArgumentException("DocumentType must be either CPF or CNPJ for Brazilian users");
+            }
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
             if (!result.Succeeded)
@@ -135,14 +147,23 @@ namespace Application.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? "");
 
+            var roles = _userManager.GetRolesAsync(user).Result;
+
+            var claims = new List<Claim>
+            {
+                new Claim("sub", user.Id),
+                new Claim(ClaimTypes.Name, user.UserName ?? ""),
+                new Claim("TokenType", "User")
+            };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim("sub", user.Id),
-                    new Claim(ClaimTypes.Name, user.UserName ?? ""),
-                    new Claim("TokenType", "User")
-                }),
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
                 Issuer = _configuration.GetSection("Jwt")["Issuer"],

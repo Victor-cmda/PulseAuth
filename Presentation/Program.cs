@@ -95,6 +95,9 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("ClientPolicy", policy =>
         policy.RequireClaim("TokenType", "Client"));
+
+    options.AddPolicy("AdminPolicy", policy =>
+        policy.RequireRole("Admin"));
 });
 
 builder.Services.AddCors(options =>
@@ -112,6 +115,7 @@ builder.Services.AddScoped<ISellerService, SellerService>();
 builder.Services.AddScoped<ISellerService, SellerService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICommerceService, CommerceService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();

@@ -79,6 +79,23 @@ namespace Infrastructure.Data
                 entity.ToTable(name: "CommerceCallbacks", schema: "identity");
                 entity.HasIndex(c => c.Id).IsUnique();
             });
+
+            builder.Entity<IdentityRole>().HasData(
+                new IdentityRole
+                {
+                    Id = "1",
+                    Name = "Admin",
+                    NormalizedName = "ADMIN",
+                    ConcurrencyStamp = Guid.NewGuid().ToString()
+                },
+                new IdentityRole
+                {
+                    Id = "2",
+                    Name = "User",
+                    NormalizedName = "USER",
+                    ConcurrencyStamp = Guid.NewGuid().ToString()
+                }
+            );
         }
     }
 }
