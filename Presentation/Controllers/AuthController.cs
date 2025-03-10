@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 
@@ -10,10 +11,11 @@ namespace Presentation.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService)
+        private readonly IRoleService _roleService;
+        public AuthController(IAuthService authService, IRoleService roleService)
         {
             _authService = authService;
+            _roleService = roleService;
         }
 
         [HttpPost("register")]
@@ -75,6 +77,34 @@ namespace Presentation.Controllers
             {
                 return Unauthorized(ex.Message);
             }
+        }
+
+        [HttpPost("assign-admin")]
+        [Authorize(Policy = "AdminPolicy")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> AssignAdminRole([FromBody] string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest("UserId is required");
+            }
+
+            var result = await _roleService.AssignUserToRoleAsync(userId, "Admin");
+            if (!result)
+            {
+                return BadRequest("Failed to assign admin role to user");
+            }
+
+            return Ok(new { message = "Admin role assigned successfully" });
+        }
+
+        [HttpGet("check-admin")]
+        [Authorize(Policy = "AdminPolicy")]
+        public IActionResult CheckAdmin()
+        {
+            return Ok(new { isAdmin = true });
         }
 
         private ClientCredentialsDto DecodeBasicAuthenticationHeader(string authorizationHeader)

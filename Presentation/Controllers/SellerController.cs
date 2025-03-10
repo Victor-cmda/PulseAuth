@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("seller")]
     public class SellerController : ControllerBase
@@ -25,7 +26,6 @@ namespace Presentation.Controllers
 
         [HttpGet]
         [Route("available")]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<SellerDto>>> GetSellersByUserId()
         {
             var userIdString = GetUserIdFromToken();
@@ -38,7 +38,6 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<ActionResult<SellerDto>> PostSeller(SellerDto sellerDto)
         {
             var userIdString = GetUserIdFromToken();
@@ -52,7 +51,6 @@ namespace Presentation.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        [Authorize]
         public async Task<ActionResult<SellerDto>> GetSellerById(Guid id)
         {
             try
@@ -82,7 +80,6 @@ namespace Presentation.Controllers
 
         [HttpGet]
         [Route("{id}/with-commerces")]
-        [Authorize]
         public async Task<ActionResult<SellerWithCommercesDto>> GetSellerWithCommerces(Guid id)
         {
             try
@@ -121,7 +118,6 @@ namespace Presentation.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<ActionResult<SellerDto>> PutSeller(Guid id, SellerDto sellerDto)
         {
             try
@@ -149,7 +145,6 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
         public async Task<ActionResult> DeleteSeller(Guid id)
         {
             try

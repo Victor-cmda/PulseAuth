@@ -92,6 +92,12 @@ namespace Application.Services
                 throw new Exception("Invalid credentials");
             }
 
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Count == 0)
+            {
+                await _userManager.AddToRoleAsync(user, "User");
+            }
+
             return GenerateTokenForUser(user);
         }
 

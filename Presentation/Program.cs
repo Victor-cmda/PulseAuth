@@ -5,6 +5,7 @@ using Domain.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,6 +14,12 @@ using Presentation.Configuration;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
@@ -50,6 +57,18 @@ builder.Services.AddSwaggerGen(c =>
             },
             new string[] {}
         }
+    });
+
+    c.TagActionsBy(api =>
+    {
+        if (api.GroupName != null)
+            return new[] { api.GroupName };
+
+        if (api.ActionDescriptor.EndpointMetadata.OfType<AuthorizeAttribute>()
+            .Any(attr => attr.Policy == "AdminPolicy"))
+            return new[] { "Admin" };
+
+        return new[] { "Default" };
     });
 });
 
@@ -131,6 +150,10 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth API V1");
 });
 
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("Starting application...");
+
+await DbInitializer.InitializeAsync(app.Services, logger);
 
 app.UseHttpsRedirection();
 app.UseCors("OpenCorsPolicy");
