@@ -144,7 +144,7 @@ namespace Application.Services
                 return null;
             }
 
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Client.Id == clientId);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Client.ClientId == clientId.ToString());
             return user;
         }
 
